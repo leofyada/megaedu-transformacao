@@ -46,6 +46,17 @@ def limpeza_basica(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
     valores_afericao = ["Conectada", "Não encaminhada", "Encaminhada"]
     df_limpa['AFERICAO_ENCAMINHADAS'] = np.select(condicoes_afericao, valores_afericao, default="Não encaminhada")
 
+    # Gera as variáveis de conectividade por recurso
+    
+    # EACE conectadas
+    condicoes_eace_conectadas = (
+        df_limpa['BASELINE_ENCAMINHADAS'].isin(['Encaminhada', 'Não encaminhada']) &
+        df_limpa['AFERICAO_ENCAMINHADAS'].eq('Conectada') &
+        df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA_BASELINE'].isin(['EACE FASE 2 E 3', 'EACE FASE 4', 'EACE FASE 4 ETAPA 2']) &
+        (df_limpa['EACE_FASE_2_E_3_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_1_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_2_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_3_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_4_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura'))
+    )
+    df_limpa['eace_conectadas'] = np.where(condicoes_eace_conectadas, 1, 0)
+
     # Exporta base limpa
     df_limpa.to_parquet(caminho_base_limpa, engine="pyarrow", index=False)
     
