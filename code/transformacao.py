@@ -1,7 +1,6 @@
 # Importa bibliotecas
 import pandas as pd
 import numpy as np
-import logging
 
 # Função para realizar o join das bases de dados
 def limpeza_basica(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
