@@ -48,14 +48,29 @@ def limpeza_basica(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
 
     # Gera as variáveis de conectividade por recurso
     
-    # EACE conectadas
-    condicoes_eace_conectadas = (
+    # Escolas conectadas por recurso
+    condicoes_escolas_conectadas = [
         df_limpa['BASELINE_ENCAMINHADAS'].isin(['Encaminhada', 'Não encaminhada']) &
         df_limpa['AFERICAO_ENCAMINHADAS'].eq('Conectada') &
         df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA_BASELINE'].isin(['EACE FASE 2 E 3', 'EACE FASE 4', 'EACE FASE 4 ETAPA 2']) &
-        (df_limpa['EACE_FASE_2_E_3_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_1_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_2_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_3_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_4_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura'))
-    )
-    df_limpa['eace_conectadas'] = np.where(condicoes_eace_conectadas, 1, 0)
+        (df_limpa['EACE_FASE_2_E_3_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_1_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_2_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_3_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['EACE_FASE_4_ETAPA_4_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura')),
+        df_limpa['BASELINE_ENCAMINHADAS'].isin(['Encaminhada', 'Não encaminhada']) &
+        df_limpa['AFERICAO_ENCAMINHADAS'].eq('Conectada') &
+        df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA_BASELINE'].isin(['FUST NRO', 'FUST REEMBOLSÁVEL', 'FUST RENUNCIA FISCAL']) &
+        (df_limpa['FUST_NRO_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['FUST_REEMBOLSAVEL_VELOCIDADE_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['FUST_RF_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura') | df_limpa['FUST_RF2_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura')),
+        df_limpa['BASELINE_ENCAMINHADAS'].isin(['Encaminhada', 'Não encaminhada']) &
+        df_limpa['AFERICAO_ENCAMINHADAS'].eq('Conectada') &
+        df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA_BASELINE'].eq('PIEC 2024') &
+        df_limpa['PIEC_2024_VELOCIDADE_ENDERECAMENTO'].eq('1. Recurso Previsto: Tem recurso previsto, mas ainda não tem RFP'),
+        df_limpa['BASELINE_ENCAMINHADAS'].isin(['Encaminhada', 'Não encaminhada']) &
+        df_limpa['AFERICAO_ENCAMINHADAS'].eq('Conectada') &
+        df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA_BASELINE'].eq('LEI 14172') &
+        df_limpa['LEI_14172_VELOCIDADE_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura'),
+        df_limpa['BASELINE_ENCAMINHADAS'].eq('Conectada') & df_limpa['AFERICAO_ENCAMINHADAS'].ne('Conectada')
+    ]
+
+    valores_escolas_conectadas_recurso = ["eace_conectadas", "fust_conectadas", "piec_conectadas", "lei14172_conectadas", "saidas"]
+    df_limpa['escolas_conectadas_recurso'] = np.select(condicoes_escolas_conectadas, valores_escolas_conectadas_recurso, default="")
 
     # Exporta base limpa
     df_limpa.to_parquet(caminho_base_limpa, engine="pyarrow", index=False)
