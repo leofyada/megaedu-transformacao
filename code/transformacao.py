@@ -65,12 +65,24 @@ def limpeza_basica(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
         df_limpa['BASELINE_ENCAMINHADAS'].isin(['Encaminhada', 'Não encaminhada']) &
         df_limpa['AFERICAO_ENCAMINHADAS'].eq('Conectada') &
         df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA_BASELINE'].eq('LEI 14172') &
-        df_limpa['LEI_14172_VELOCIDADE_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura'),
-        df_limpa['BASELINE_ENCAMINHADAS'].eq('Conectada') & df_limpa['AFERICAO_ENCAMINHADAS'].ne('Conectada')
+        df_limpa['LEI_14172_VELOCIDADE_ENDEREÇAMENTO'].eq('4. Implementado: A escola já recebeu a infraestrutura')
     ]
 
-    valores_escolas_conectadas_recurso = ["eace_conectadas", "fust_conectadas", "piec_conectadas", "lei14172_conectadas", "saidas"]
+    valores_escolas_conectadas_recurso = ["eace_conectadas", "fust_conectadas", "piec_conectadas", "lei14172_conectadas"]
     df_limpa['escolas_conectadas_recurso'] = np.select(condicoes_escolas_conectadas, valores_escolas_conectadas_recurso, default="")
+
+    # Escolas encaminhadas por recurso
+    condicoes_escolas_encaminhadas = [
+        (~df_limpa['BASELINE_ENCAMINHADAS'].isin(['Conectada', 'Encaminhada'])) &
+        df_limpa['AFERICAO_ENCAMINHADAS'].eq('Encaminhada') &
+        df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA'].isin(['EACE FASE 4 ETAPA 1', 'EACE FASE 4 ETAPA 2']),
+        (~df_limpa['BASELINE_ENCAMINHADAS'].isin(['Conectada', 'Encaminhada'])) &
+        df_limpa['AFERICAO_ENCAMINHADAS'].eq('Encaminhada') &
+        df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA'].eq('FUST RENUNCIA FISCAL 2')
+    ]
+
+    valores_escolas_encaminhadas_recurso = ["eace_encaminhadas", "fust_encaminhadas"]
+    df_limpa['escolas_encaminhadas_recurso'] = np.select(condicoes_escolas_encaminhadas, valores_escolas_encaminhadas_recurso, default="")
 
     # Exporta base limpa
     df_limpa.to_parquet(caminho_base_limpa, engine="pyarrow", index=False)
