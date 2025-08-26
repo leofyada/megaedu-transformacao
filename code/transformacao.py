@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 # Função para realizar o join das bases de dados
-def limpeza_basica(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
+def recursos(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
     
     # Importa arquivos .parquet
     df_baseline = pd.read_parquet(caminho_baseline, engine="pyarrow")
@@ -16,7 +16,7 @@ def limpeza_basica(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
     # Converte as variáveis "CO_ENTIDADE" para str
     df_baseline["CO_ENTIDADE_KEY"] = df_baseline["CO_ENTIDADE"].astype(str).str.strip().str.zfill(8)
     df_fonteunica["CO_ENTIDADE_KEY"]    = df_fonteunica["CO_ENTIDADE"].astype(str).str.strip().str.zfill(8)
-    
+
     # Mantém apenas as colunas da base de baseline necessárias
     df_baseline = df_baseline.drop(columns=["CO_ENTIDADE"], errors="ignore")
    
@@ -85,4 +85,4 @@ def limpeza_basica(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
 
     # Exporta base limpa
     df_limpa.to_parquet(caminho_base_limpa, engine="pyarrow", index=False)
-    
+

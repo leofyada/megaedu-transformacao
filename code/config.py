@@ -1,7 +1,9 @@
 # Importa bibliotecas
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
-from datetime import date
+from datetime import datetime
+
+now = datetime.now()
 
 class Settings(BaseSettings):
     
@@ -9,7 +11,8 @@ class Settings(BaseSettings):
     BRONZE_DIR: Path = DATA_DIR / "bronze"
     PRATA_DIR: Path = DATA_DIR / "prata"
     OURO_DIR: Path = DATA_DIR / "ouro"
-    RUN_DATE: str = date.today().strftime("%Y%m%d")
+
+    RUN_DATE: str = now.strftime("%Y%m")
 
     BASELINE_XLSX: str = "{run}_baseline_escolas.xlsx"
     FONTEUNICA_XLSX: str = "{run}_fonte_unica.xlsx"
