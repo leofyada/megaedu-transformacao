@@ -1,19 +1,7 @@
 from importacao import converte_parquet
 from transformacao import limpeza_basica
+from config import settings
 import logging
-
-# Caminho para o arquivo com o baseline
-caminho_baseline = "/Users/leonardoyada/Desktop/megaedu-transformacao/data/bronze/20250825_baseline_escolas.xlsx"
-# Caminho para a fonte única
-caminho_fonteunica = "/Users/leonardoyada/Desktop/megaedu-transformacao/data/bronze/20250825_fonte_unica.xlsx"
-
-# Caminho de destino da base com o baseline
-caminho_destino_baseline = "/Users/leonardoyada/Desktop/megaedu-transformacao/data/prata/20250825_baseline_escolas.parquet"
-# Caminho de destino da fonte única
-caminho_destino_fonteunica = "/Users/leonardoyada/Desktop/megaedu-transformacao/data/prata/20250825_fonte_unica.parquet"
-
-# Caminho de destino da base limpa
-caminho_destino_limpa = "/Users/leonardoyada/Desktop/megaedu-transformacao/data/prata/base_limpa.parquet"
 
 # Configuração do log
 logging.basicConfig(
@@ -25,16 +13,27 @@ logger = logging.getLogger("megaedu.transformacao")
 
 def run_etl():
     
+    run = settings.RUN_DATE
+    bronze = settings.BRONZE_DIR
+    prata = settings.PRATA_DIR
+
+    caminho_baseline_xlsx = bronze / settings.BASELINE_XLSX.format(run=run)
+    caminho_fonteunica_xlsx = bronze / settings.FONTEUNICA_XLSX.format(run=run)
+
+    caminho_baseline_parquet = prata / f"{run}_baseline_escolas.parquet"
+    caminho_fonteunica_parquet = prata / f"{run}_fonte_unica.parquet"
+    caminho_limpa_parquet = prata / f"{run}_base_limpa.parquet"
+
     try:
 
         # Converte arquivos Excel para .parquet
-        converte_parquet(caminho_baseline, caminho_destino_baseline)
+        converte_parquet(caminho_baseline_xlsx, caminho_baseline_parquet)
         logger.info("Conversão do arquivo baseline para parquet realizado com sucesso")
-        converte_parquet(caminho_fonteunica, caminho_destino_fonteunica)
+        converte_parquet(caminho_fonteunica_xlsx, caminho_fonteunica_parquet)
         logger.info("Conversão do arquivo fonte única para parquet realizada com sucesso")    
 
         # Limpa os arquivos e retorna uma base tratada
-        limpeza_basica(caminho_destino_baseline, caminho_destino_fonteunica, caminho_destino_limpa)
+        limpeza_basica(caminho_baseline_parquet, caminho_fonteunica_parquet, caminho_limpa_parquet)
         logger.info("Limpeza dos arquivos realizada com sucesso")
 
     except Exception as e:
