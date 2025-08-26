@@ -1,5 +1,5 @@
 from importacao import converte_parquet
-from transformacao import limpeza_basica
+from transformacao import recursos
 from config import settings
 import logging
 
@@ -16,13 +16,14 @@ def run_etl():
     run = settings.RUN_DATE
     bronze = settings.BRONZE_DIR
     prata = settings.PRATA_DIR
+    ouro = settings.OURO_DIR
 
     caminho_baseline_xlsx = bronze / settings.BASELINE_XLSX.format(run=run)
     caminho_fonteunica_xlsx = bronze / settings.FONTEUNICA_XLSX.format(run=run)
 
     caminho_baseline_parquet = prata / f"{run}_baseline_escolas.parquet"
     caminho_fonteunica_parquet = prata / f"{run}_fonte_unica.parquet"
-    caminho_limpa_parquet = prata / f"{run}_base_limpa.parquet"
+    caminho_limpa_parquet = ouro / f"{run}_base_limpa.parquet"
 
     try:
 
@@ -33,8 +34,8 @@ def run_etl():
         logger.info("Conversão do arquivo fonte única para parquet realizada com sucesso")    
 
         # Limpa os arquivos e retorna uma base tratada
-        limpeza_basica(caminho_baseline_parquet, caminho_fonteunica_parquet, caminho_limpa_parquet)
-        logger.info("Limpeza dos arquivos realizada com sucesso")
+        recursos(caminho_baseline_parquet, caminho_fonteunica_parquet, caminho_limpa_parquet)
+        logger.info("Inclusão de variáveis de recursos/políticas realizada com sucesso")
 
     except Exception as e:
         logger.exception("ETL failed", extra={"status": "error"})
