@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     DATA_DIR: Path = Path.cwd() / "data"
     BRONZE_DIR: Path = DATA_DIR / "bronze"
     PRATA_DIR: Path = DATA_DIR / "prata"
+    OURO_DIR: Path = DATA_DIR / "ouro"
     RUN_DATE: str = date.today().strftime("%Y%m%d")
 
     BASELINE_XLSX: str = "{run}_baseline_escolas.xlsx"
