@@ -1,5 +1,7 @@
 from importacao import converte_parquet
 from transformacao import recursos
+from transformacao import dispositivos
+from transformacao import conectividade
 from config import settings
 from carregamento import carregamento
 import logging
@@ -40,6 +42,11 @@ def run_etl():
         # Limpa os arquivos e retorna uma base tratada
         recursos(caminho_baseline_parquet, caminho_fonteunica_parquet, caminho_limpa_parquet)
         logger.info("Inclusão de variáveis de recursos/políticas realizada com sucesso")
+        # Inclui as variáveis referentes a dispositivos
+        dispositivos(caminho_limpa_parquet)
+        logger.info("Inclusão de variáveis de dispositivos")
+        conectividade(caminho_limpa_parquet)
+        logger.info("Inclusão de variáveis de conectividade")
 
         # Carrega a base limpa
         carregamento(caminho_limpa_parquet, caminho_base_final)
