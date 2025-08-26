@@ -15,7 +15,7 @@ def recursos(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
 
     # Converte as variáveis "CO_ENTIDADE" para str
     df_baseline["CO_ENTIDADE_KEY"] = df_baseline["CO_ENTIDADE"].astype(str).str.strip().str.zfill(8)
-    df_fonteunica["CO_ENTIDADE_KEY"]    = df_fonteunica["CO_ENTIDADE"].astype(str).str.strip().str.zfill(8)
+    df_fonteunica["CO_ENTIDADE_KEY"] = df_fonteunica["CO_ENTIDADE"].astype(str).str.strip().str.zfill(8)
 
     # Mantém apenas as colunas da base de baseline necessárias
     df_baseline = df_baseline.drop(columns=["CO_ENTIDADE"], errors="ignore")
