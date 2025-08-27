@@ -7,6 +7,9 @@ from carregamento import carregamento
 from modelos import modelo_conectividade
 from modelos import modelo_conectividade_projecao
 from modelos import modelo_conectividade_recurso
+from modelos import modelo_dispositivo
+from modelos import modelo_dispositivo_uf
+from modelos import modelo_wifi
 import logging
 
 # Configuração do log
@@ -37,6 +40,9 @@ def run_etl():
     caminho_modelo_conectividade = ouro / f"{run}_mod_conectividade.parquet"
     caminho_modelo_conectividade_projecao = ouro / f"{run}_mod_conectividade_projecao.parquet"
     caminho_modelo_conectividade_recurso = ouro / f"{run}_mod_conectividade_recurso.parquet"
+    caminho_modelo_dispositivo = ouro / f"{run}_mod_dispositivo.parquet"
+    caminho_modelo_dispositivo_uf = ouro / f"{run}_mod_dispositivo_uf.parquet"
+    caminho_modelo_wifi = ouro / f"{run}_mod_wifi.parquet"
 
     try:
 
@@ -60,6 +66,10 @@ def run_etl():
         modelo_conectividade_projecao(caminho_limpa_parquet, caminho_modelo_conectividade_projecao)
         modelo_conectividade_recurso(caminho_limpa_parquet, caminho_modelo_conectividade_recurso)
         logger.info("Modelos de conectividade criado com sucesso")
+        modelo_dispositivo(caminho_limpa_parquet, caminho_modelo_dispositivo)
+        modelo_dispositivo_uf(caminho_limpa_parquet, caminho_modelo_dispositivo_uf)
+        modelo_wifi(caminho_limpa_parquet, caminho_modelo_wifi)
+        logger.info("Modelos de dispositivos criado com sucesso")
 
         # Carrega a base limpa
         carregamento(caminho_limpa_parquet, caminho_base_final)
