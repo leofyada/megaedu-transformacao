@@ -113,7 +113,7 @@ def conectividade(caminho_base_limpa):
     # Escolas atendidas, encaminhadas e não encaminhadas
     df_limpa['conect_atendida'] = np.where(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'] == '5. Atendida', 1, 0)
     df_limpa['conect_encaminhada'] = np.where(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']), 1, 0)
-    df_limpa['conect_nao_encaminhada'] = np.where(~(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contrato: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura', '5. Atendida'])), 1, 0)
+    df_limpa['conect_nao_encaminhada'] = np.where(~(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura', '5. Atendida'])), 1, 0)
     
     # Seleciona apenas as colunas utilizadas
     df_limpa = df_limpa[
