@@ -93,7 +93,7 @@ def dispositivos(caminho_base_limpa):
 
     # Escolas com dispositivos no pâmetro 1:10
     df_limpa['disp_1_10_adq'] = np.where(df_limpa['END_DISPOSITIVOS_ADQ']=='5. Atendida', 1, 0)
-    df_limpa['disp_1_10_enc'] = np.where(df_limpa['END_DISPOSITIVOS_ADQ'].isin(['3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']), 1, 0)
+    df_limpa['disp_1_10_enc'] = np.where((df_limpa['END_DISPOSITIVOS_ADQ'].isin(['3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']) & (df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA'] != 'LEI 14172')), 1, 0)
     df_limpa['disp_1_10_naoenc'] = np.where(df_limpa['END_DISPOSITIVOS_ADQ'].isin(['0. Não Endereçada: Sem recurso previsto', '1. Recurso Previsto: Tem recurso previsto, mas ainda não tem RFP', '2. Endereçada: Tem recurso previsto e já possui RFP']), 1, 0)
 
     # Escolas com wifi
@@ -118,7 +118,7 @@ def conectividade(caminho_base_limpa):
     # Seleciona apenas as colunas utilizadas
     df_limpa = df_limpa[
         [
-            'CO_ENTIDADE', 'TP_DEPENDENCIA_CENSO', 'QT_MAT_BAS', 'END_VELOCIDADE_1MBPS_ENEC_DECRETO', 'END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA', 'conect_atendida', 'conect_encaminhada', '3_ST_CONECTIVIDADE_CL_100KBPS', 'escolas_conectadas_recurso', 'escolas_encaminhadas_recurso', 'disp_1_10_adq', 'disp_1_10_enc', 'wifi_adq', 'wifi_enc'
+            'CO_UF', 'NO_UF', 'SG_UF', 'CO_ENTIDADE', 'TP_DEPENDENCIA_CENSO', 'QT_MAT_BAS', 'END_DISPOSITIVOS_ADQ', 'END_VELOCIDADE_1MBPS_ENEC_DECRETO', 'END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA', 'conect_atendida', 'conect_encaminhada', '3_ST_CONECTIVIDADE_CL_100KBPS', 'escolas_conectadas_recurso', 'escolas_encaminhadas_recurso', 'disp_1_10_adq', 'disp_1_10_enc', 'wifi_adq', 'wifi_enc', 'BASELINE_ENCAMINHADAS', 'AFERICAO_ENCAMINHADAS'
         ]
     ]
 
