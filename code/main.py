@@ -4,6 +4,9 @@ from transformacao import dispositivos
 from transformacao import conectividade
 from config import settings
 from carregamento import carregamento
+from modelos import modelo_conectividade
+from modelos import modelo_conectividade_projecao
+from modelos import modelo_conectividade_recurso
 import logging
 
 # Configuração do log
@@ -31,6 +34,10 @@ def run_etl():
 
     caminho_base_final = ouro / f"{run}_base_limpa.csv"
 
+    caminho_modelo_conectividade = ouro / f"{run}_mod_conectividade.parquet"
+    caminho_modelo_conectividade_projecao = ouro / f"{run}_mod_conectividade_projecao.parquet"
+    caminho_modelo_conectividade_recurso = ouro / f"{run}_mod_conectividade_recurso.parquet"
+
     try:
 
         # Converte arquivos Excel para .parquet
@@ -47,6 +54,12 @@ def run_etl():
         logger.info("Inclusão de variáveis de dispositivos")
         conectividade(caminho_limpa_parquet)
         logger.info("Inclusão de variáveis de conectividade")
+        
+        # Cria os modelos para o BI
+        modelo_conectividade(caminho_limpa_parquet, caminho_modelo_conectividade)
+        modelo_conectividade_projecao(caminho_limpa_parquet, caminho_modelo_conectividade_projecao)
+        modelo_conectividade_recurso(caminho_limpa_parquet, caminho_modelo_conectividade_recurso)
+        logger.info("Modelos de conectividade criado com sucesso")
 
         # Carrega a base limpa
         carregamento(caminho_limpa_parquet, caminho_base_final)

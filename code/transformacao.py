@@ -112,8 +112,16 @@ def conectividade(caminho_base_limpa):
 
     # Escolas atendidas, encaminhadas e não encaminhadas
     df_limpa['conect_atendida'] = np.where(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'] == '5. Atendida', 1, 0)
-    df_limpa['conect_encaminhada'] = np.where(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contrato: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']), 1, 0)
+    df_limpa['conect_encaminhada'] = np.where(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']), 1, 0)
     df_limpa['conect_nao_encaminhada'] = np.where(~(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contrato: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura', '5. Atendida'])), 1, 0)
+    
+    # Seleciona apenas as colunas utilizadas
+    df_limpa = df_limpa[
+        [
+            'CO_ENTIDADE', 'TP_DEPENDENCIA_CENSO', 'QT_MAT_BAS', 'END_VELOCIDADE_1MBPS_ENEC_DECRETO', 'END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA', 'conect_atendida', 'conect_encaminhada', '3_ST_CONECTIVIDADE_CL_100KBPS', 'escolas_conectadas_recurso', 'escolas_encaminhadas_recurso', 'disp_1_10_adq', 'disp_1_10_enc', 'wifi_adq', 'wifi_enc'
+        ]
+    ]
+
 
     # Exporta base limpa
     df_limpa.to_parquet(caminho_base_limpa, engine="pyarrow", index=False)
