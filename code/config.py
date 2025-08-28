@@ -1,23 +1,17 @@
-# Importa bibliotecas
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pathlib import Path
-from datetime import datetime
+from dataclasses import dataclass
 
-now = datetime.now()
+@dataclass
+class ETLConfig:
 
-class Settings(BaseSettings):
-    
-    DATA_DIR: Path = Path.cwd() / "data"
-    BRONZE_DIR: Path = DATA_DIR / "bronze"
-    PRATA_DIR: Path = DATA_DIR / "prata"
-    OURO_DIR: Path = DATA_DIR / "ouro"
+    base_baseline: str
+    base_fonte_unica: str
 
-    RUN_DATE: str = now.strftime("%Y%m")
+    out_prata: str
+    out_mod_conectividade: str
+    out_mod_conectividade_proj: str
+    out_mod_conectividade_recurso: str
+    out_mod_dispositivo: str
+    out_mod_dispositivo_uf: str
+    out_mod_wifi: str
 
-    BASELINE_XLSX: str = "{run}_baseline_escolas.xlsx"
-    FONTEUNICA_XLSX: str = "{run}_fonte_unica.xlsx"
-
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-
-settings = Settings()
 

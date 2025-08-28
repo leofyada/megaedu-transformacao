@@ -3,10 +3,7 @@ import pandas as pd
 import numpy as np
 
 # Função para criar o modelo para escolas conectadas e encaminhadas
-def modelo_conectividade(caminho_base_limpa, caminho_destino):
-
-    # Importação da base limpa
-    df = pd.read_parquet(caminho_base_limpa)
+def modelo_conectividade(df: pd.DataFrame) -> pd.DataFrame:
 
     # Quantidade de escolas conectadas 
     escolas_conectadas = len(df[df['conect_atendida']==1])
@@ -18,15 +15,11 @@ def modelo_conectividade(caminho_base_limpa, caminho_destino):
     # Tabela long
     df_modelo = df_modelo.melt(id_vars = 'categoria', value_vars = ['esc_conc', 'esc_enc'], var_name='cat', value_name='valor')
 
-    # Exporta modelo
-    df_modelo.to_parquet(caminho_destino, engine="pyarrow", index=False)
-
+    # Retorna modelo
+    return df_modelo
 
 # Função para criar o modelo para escolas conectadas e encaminhadas + projeção (100 kbps)
-def modelo_conectividade_projecao(caminho_base_limpa, caminho_destino):
-
-    # Importação da base limpa
-    df = pd.read_parquet(caminho_base_limpa)
+def modelo_conectividade_projecao(df: pd.DataFrame) -> pd.DataFrame:
 
     # Quantidade de escolas conectadas
     escolas_conectadas = len(df[df['conect_atendida']==1])
@@ -40,15 +33,11 @@ def modelo_conectividade_projecao(caminho_base_limpa, caminho_destino):
     # Tabela long
     df_modelo = df_modelo.melt(id_vars = 'categoria', value_vars = ['esc_conc', 'esc_enc', 'esc_proj'], var_name='cat', value_name='valor')
 
-    # Exporta modelo
-    df_modelo.to_parquet(caminho_destino, engine="pyarrow", index=False)
-
+    # Retorna modelo
+    return df_modelo
 
 # Função para criar o modelo para as escolas conectadas e encaminhadas por fonte de recurso
-def modelo_conectividade_recurso(caminho_base_limpa, caminho_destino):
-
-    # Importação da base limpa
-    df = pd.read_parquet(caminho_base_limpa)
+def modelo_conectividade_recurso(df: pd.DataFrame) -> pd.DataFrame:
 
     # Escolas conectadas
     eace_conectadas = df[df['escolas_conectadas_recurso']=='eace_conectadas']['CO_ENTIDADE'].nunique()
@@ -89,15 +78,11 @@ def modelo_conectividade_recurso(caminho_base_limpa, caminho_destino):
     }
     df_modelo = pd.DataFrame(dados)
     
-    # Exporta modelo
-    df_modelo.to_parquet(caminho_destino, engine="pyarrow", index=False)
-
+    # Retorna modelo
+    return df_modelo
 
 # Função para criar o modelo de escolas com dispositivos encaminhados (retirar Lei 14.172)
-def modelo_dispositivo(caminho_base_limpa, caminho_destino):
-
-    # Importação da base limpa
-    df = pd.read_parquet(caminho_base_limpa)
+def modelo_dispositivo(df: pd.DataFrame) -> pd.DataFrame:
 
     # Quantidade de escolas estaduais adequadas
     escolas_atendidas = df[(df['disp_1_10_adq']==1) & (df['TP_DEPENDENCIA_CENSO']=='Estadual')]['CO_ENTIDADE'].nunique()
@@ -110,19 +95,22 @@ def modelo_dispositivo(caminho_base_limpa, caminho_destino):
     }
     df_modelo = pd.DataFrame(dados)
 
-    # Exporta modelo
-    df_modelo.to_parquet(caminho_destino, engine="pyarrow", index=False)
+    # Retorna modelo
+    return df_modelo
 
 # Função para criar o modelo de escolas com dispositivos encaminhados por UF (para elaboração do mapa)
-def modelo_dispositivo_uf(caminho_base_limpa, caminho_destino):
+def modelo_dispositivo_uf(df: pd.DataFrame) -> pd.DataFrame:
 
-    # Importação da base limpa
-    df = pd.read_parquet(caminho_base_limpa)
     # Filtro de escolas estaduais
     df = df[df['TP_DEPENDENCIA_CENSO']=='Estadual']
-
+    
     # Quantidade de escolas estaduais encaminhadas
-    df['disp_enc'] = np.where((df['disp_1_10_adq']==1) | (df['END_DISPOSITIVOS_ADQ']=='3. Contratado: Contrato já foi firmado com fornecedores'), 'sim', 'nao')
+    df = df.copy()
+    mask = (df['disp_1_10_adq'].eq(1) | df['END_DISPOSITIVOS_ADQ'].eq('3. Contratado: Contrato já foi firmado com fornecedores'))
+    df.loc[:, 'disp_enc'] = np.where(mask, 'sim', 'nao')
+    
+    # Quantidade de escolas estaduais encaminhadas
+    #df['disp_enc'] = np.where((df['disp_1_10_adq']==1) | (df['END_DISPOSITIVOS_ADQ']=='3. Contratado: Contrato já foi firmado com fornecedores'), 'sim', 'nao')
     
     # Cálculo por UF
     df_modelo = df.groupby(["CO_UF", "SG_UF", "NO_UF", "disp_enc"], dropna=False)["CO_ENTIDADE"].nunique().reset_index(name="qt_entidades").sort_values(["CO_UF", "SG_UF", "NO_UF", "disp_enc"])
@@ -132,16 +120,12 @@ def modelo_dispositivo_uf(caminho_base_limpa, caminho_destino):
     df_modelo['country'] = 'Brasil'
     df_modelo = df_modelo[['CO_UF', 'SG_UF', 'NO_UF', 'country', 'p_disp_enc']]
 
-    # Exporta modelo
-    df_modelo.to_parquet(caminho_destino, engine="pyarrow", index=False)
-
+    # Retorna modelo
+    return df_modelo
 
 # Função para criar modelo de escolas com wifi
-def modelo_wifi(caminho_base_limpa, caminho_destino):
+def modelo_wifi(df: pd.DataFrame) -> pd.DataFrame:
     
-    # Importação da base limpa
-    df = pd.read_parquet(caminho_base_limpa)
-
     # Quantidade de escolas com wifi adequado
     escolas_adequadas = df[df['wifi_adq']==1]['CO_ENTIDADE'].nunique() 
     # Quantidade de escolas com wifi encaminhado
@@ -152,9 +136,8 @@ def modelo_wifi(caminho_base_limpa, caminho_destino):
     # Tabela long
     df_modelo = df_modelo.melt(id_vars = 'categoria', value_vars = ['esc_adq', 'esc_enc'], var_name='cat', value_name='valor')
 
-    # Exporta modelo
-    df_modelo.to_parquet(caminho_destino, engine="pyarrow", index=False)
-        
+    # Retorna modelo
+    return df_modelo
 
 
 
