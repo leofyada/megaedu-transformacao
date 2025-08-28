@@ -1,6 +1,7 @@
 # Bibliotecas
 import pandas as pd
 from pathlib import Path
+from typing import Union
 
 # Pathish pode ser uma string ou um objeto Path
 Pathish = Union[str, Path]

@@ -1,85 +1,44 @@
-from importacao import converte_parquet
-from transformacao import recursos
-from transformacao import dispositivos
-from transformacao import conectividade
-from config import settings
-from carregamento import carregamento
-from modelos import modelo_conectividade
-from modelos import modelo_conectividade_projecao
-from modelos import modelo_conectividade_recurso
-from modelos import modelo_dispositivo
-from modelos import modelo_dispositivo_uf
-from modelos import modelo_wifi
-import logging
+import argparse
+from config import ETLConfig
+from orquestrador import run_etl
+from pathlib import Path
+from datetime import datetime
+from typing import Optional
 
-# Configuração do log
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)sZ %(levelname)s %(name)s %(message)s",
-    datefmt="%Y-%m-%dT%H:%M:%S",
-)
-logger = logging.getLogger("megaedu.transformacao")
+def make_outputs(out_dir: Path, run_id: Optional[str] = None) -> dict[str, str]:
+    out_dir = Path(out_dir)
+    run_tag = f"_{run_id}" if run_id else ""
+    paths = {
+        "out_prata": out_dir / "prata" / f"base_limpa{run_tag}.parquet",
 
-def run_etl():
-    
-    run = settings.RUN_DATE
-    bronze = settings.BRONZE_DIR
-    prata = settings.PRATA_DIR
-    ouro = settings.OURO_DIR
+        "out_mod_conectividade": out_dir / "ouro"  / f"mod_conectividade{run_tag}.parquet",
+        "out_mod_conectividade_proj": out_dir / "ouro"  / f"mod_conectividade_proj{run_tag}.parquet",
+        "out_mod_conectividade_recurso": out_dir / "ouro" / f"mod_conectividade_recurso{run_tag}.parquet",
+        "out_mod_dispositivo": out_dir / "ouro"  / f"mod_dispositivo{run_tag}.parquet",
+        "out_mod_dispositivo_uf": out_dir / "ouro"  / f"mod_dispositivo_uf{run_tag}.parquet",
+        "out_mod_wifi": out_dir / "ouro"  / f"mod_wifi{run_tag}.parquet",
+    }
+    # garante pastas
+    for p in paths.values():
+        Path(p).parent.mkdir(parents=True, exist_ok=True)
+    return {k: str(v) for k, v in paths.items()}
 
-
-    caminho_baseline_xlsx = bronze / settings.BASELINE_XLSX.format(run=run)
-    caminho_fonteunica_xlsx = bronze / settings.FONTEUNICA_XLSX.format(run=run)
-
-    caminho_baseline_parquet = prata / f"{run}_baseline_escolas.parquet"
-    caminho_fonteunica_parquet = prata / f"{run}_fonte_unica.parquet"
-    caminho_limpa_parquet = ouro / f"{run}_base_limpa.parquet"
-
-    caminho_base_final = ouro / f"{run}_base_limpa.csv"
-
-    caminho_modelo_conectividade = ouro / f"{run}_mod_conectividade.parquet"
-    caminho_modelo_conectividade_projecao = ouro / f"{run}_mod_conectividade_projecao.parquet"
-    caminho_modelo_conectividade_recurso = ouro / f"{run}_mod_conectividade_recurso.parquet"
-    caminho_modelo_dispositivo = ouro / f"{run}_mod_dispositivo.parquet"
-    caminho_modelo_dispositivo_uf = ouro / f"{run}_mod_dispositivo_uf.parquet"
-    caminho_modelo_wifi = ouro / f"{run}_mod_wifi.parquet"
-
-    try:
-
-        # Converte arquivos Excel para .parquet
-        converte_parquet(caminho_baseline_xlsx, caminho_baseline_parquet)
-        logger.info("Conversão do arquivo baseline para parquet realizado com sucesso")
-        converte_parquet(caminho_fonteunica_xlsx, caminho_fonteunica_parquet)
-        logger.info("Conversão do arquivo fonte única para parquet realizada com sucesso")    
-
-        # Limpa os arquivos e retorna uma base tratada
-        recursos(caminho_baseline_parquet, caminho_fonteunica_parquet, caminho_limpa_parquet)
-        logger.info("Inclusão de variáveis de recursos/políticas realizada com sucesso")
-        # Inclui as variáveis referentes a dispositivos
-        dispositivos(caminho_limpa_parquet)
-        logger.info("Inclusão de variáveis de dispositivos")
-        conectividade(caminho_limpa_parquet)
-        logger.info("Inclusão de variáveis de conectividade")
-        
-        # Cria os modelos para o BI
-        modelo_conectividade(caminho_limpa_parquet, caminho_modelo_conectividade)
-        modelo_conectividade_projecao(caminho_limpa_parquet, caminho_modelo_conectividade_projecao)
-        modelo_conectividade_recurso(caminho_limpa_parquet, caminho_modelo_conectividade_recurso)
-        logger.info("Modelos de conectividade criado com sucesso")
-        modelo_dispositivo(caminho_limpa_parquet, caminho_modelo_dispositivo)
-        modelo_dispositivo_uf(caminho_limpa_parquet, caminho_modelo_dispositivo_uf)
-        modelo_wifi(caminho_limpa_parquet, caminho_modelo_wifi)
-        logger.info("Modelos de dispositivos criado com sucesso")
-
-        # Carrega a base limpa
-        carregamento(caminho_limpa_parquet, caminho_base_final)
-        logger.info("ETL finalizado!")
-
-    except Exception as e:
-        logger.exception("ETL failed", extra={"status": "error"})
-        raise
+def parse_args():
+    p = argparse.ArgumentParser(allow_abbrev=False, description="ETL MegaEdu")
+    p.add_argument("--baseline", required=True)
+    p.add_argument("--fonteunica", required=True)
+    p.add_argument("--out-dir", required=True, help="Diretório raiz para salvar todas as saídas")
+    p.add_argument("--run-id", required=False, default=None, help="Sufixo opcional p/ versionar (ex.: 20250828)")
+    return p.parse_args()
 
 if __name__ == "__main__":
-    run_etl()
-    
+    args = parse_args()
+    outs = make_outputs(Path(args.out_dir), run_id=args.run_id)
+    cfg = ETLConfig(
+        base_baseline=args.baseline,
+        base_fonte_unica=args.fonteunica,
+        **outs  
+    )
+    run_etl(cfg)
+
 

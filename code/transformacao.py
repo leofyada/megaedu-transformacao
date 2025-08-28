@@ -3,11 +3,11 @@ import pandas as pd
 import numpy as np
 
 # Função para realizar o join das bases de dados e incluir variáveis de fonte de recurso
-def recursos(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
+def recursos(df_baseline: pd.DataFrame, df_fonteunica: pd.DataFrame) -> pd.DataFrame:
     
     # Importa arquivos .parquet
-    df_baseline = pd.read_parquet(caminho_baseline, engine="pyarrow")
-    df_fonteunica = pd.read_parquet(caminho_fonteunica, engine="pyarrow")
+    #df_baseline = pd.read_parquet(caminho_baseline, engine="pyarrow")
+    #df_fonteunica = pd.read_parquet(caminho_fonteunica, engine="pyarrow")
 
     # Remove colunas de index
     df_baseline = df_baseline.drop(columns=["Unnamed: 0"], errors="ignore")
@@ -83,45 +83,41 @@ def recursos(caminho_baseline, caminho_fonteunica, caminho_base_limpa):
     valores_escolas_encaminhadas_recurso = ["eace_encaminhadas", "fust_encaminhadas"]
     df_limpa['escolas_encaminhadas_recurso'] = np.select(condicoes_escolas_encaminhadas, valores_escolas_encaminhadas_recurso, default="")
 
-    # Exporta base limpa
-    df_limpa.to_parquet(caminho_base_limpa, engine="pyarrow", index=False)
+    # Retorna base limpa
+    return df_limpa
 
-def dispositivos(caminho_base_limpa):
+def dispositivos(df: pd.DataFrame) -> pd.DataFrame:
     
-    # Importa arquivo limpo
-    df_limpa = pd.read_parquet(caminho_base_limpa)
-
     # Escolas com dispositivos no pâmetro 1:10
-    df_limpa['disp_1_10_adq'] = np.where(df_limpa['END_DISPOSITIVOS_ADQ']=='5. Atendida', 1, 0)
-    df_limpa['disp_1_10_enc'] = np.where((df_limpa['END_DISPOSITIVOS_ADQ'].isin(['3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']) & (df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA'] != 'LEI 14172')), 1, 0)
-    df_limpa['disp_1_10_naoenc'] = np.where(df_limpa['END_DISPOSITIVOS_ADQ'].isin(['0. Não Endereçada: Sem recurso previsto', '1. Recurso Previsto: Tem recurso previsto, mas ainda não tem RFP', '2. Endereçada: Tem recurso previsto e já possui RFP']), 1, 0)
+    df['disp_1_10_adq'] = np.where(df['END_DISPOSITIVOS_ADQ']=='5. Atendida', 1, 0)
+    df['disp_1_10_enc'] = np.where((df['END_DISPOSITIVOS_ADQ'].isin(['3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']) & (df['END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA'] != 'LEI 14172')), 1, 0)
+    df['disp_1_10_naoenc'] = np.where(df['END_DISPOSITIVOS_ADQ'].isin(['0. Não Endereçada: Sem recurso previsto', '1. Recurso Previsto: Tem recurso previsto, mas ainda não tem RFP', '2. Endereçada: Tem recurso previsto e já possui RFP']), 1, 0)
 
     # Escolas com wifi
-    df_limpa['wifi_adq'] = np.where(df_limpa['4_WIFI']=='Wi-fi adequado', 1, 0)
-    df_limpa['wifi_enc'] = np.where(df_limpa['END_WIFI_ADQ'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']), 1, 0)
-    df_limpa['wifi_naoenc'] = np.where((df_limpa['wifi_adq']==0) & (df_limpa['wifi_enc']==0), 1, 0)
+    df['wifi_adq'] = np.where(df['4_WIFI']=='Wi-fi adequado', 1, 0)
+    df['wifi_enc'] = np.where(df['END_WIFI_ADQ'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']), 1, 0)
+    df['wifi_naoenc'] = np.where((df['wifi_adq']==0) & (df['wifi_enc']==0), 1, 0)
 
 
-    # Exporta a base limpa
-    df_limpa.to_parquet(caminho_base_limpa, engine="pyarrow", index=False)
+    # Retorna a base limpa
+    return df
 
-def conectividade(caminho_base_limpa):
-
-    # Importa arquivo limpo
-    df_limpa = pd.read_parquet(caminho_base_limpa)
+def conectividade(df: pd.DataFrame) -> pd.DataFrame:
 
     # Escolas atendidas, encaminhadas e não encaminhadas
-    df_limpa['conect_atendida'] = np.where(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'] == '5. Atendida', 1, 0)
-    df_limpa['conect_encaminhada'] = np.where(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']), 1, 0)
-    df_limpa['conect_nao_encaminhada'] = np.where(~(df_limpa['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura', '5. Atendida'])), 1, 0)
+    df['conect_atendida'] = np.where(df['END_VELOCIDADE_1MBPS_ENEC_DECRETO'] == '5. Atendida', 1, 0)
+    df['conect_encaminhada'] = np.where(df['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura']), 1, 0)
+    df['conect_nao_encaminhada'] = np.where(~(df['END_VELOCIDADE_1MBPS_ENEC_DECRETO'].isin(['2. Endereçada: Tem recurso previsto e já possui RFP', '3. Contratado: Contrato já foi firmado com fornecedores', '4. Implementado: A escola já recebeu a infraestrutura', '5. Atendida'])), 1, 0)
     
     # Seleciona apenas as colunas utilizadas
-    df_limpa = df_limpa[
+    df = df[
         [
             'CO_UF', 'NO_UF', 'SG_UF', 'CO_ENTIDADE', 'TP_DEPENDENCIA_CENSO', 'QT_MAT_BAS', 'END_DISPOSITIVOS_ADQ', 'END_VELOCIDADE_1MBPS_ENEC_DECRETO', 'END_VELOCIDADE_1MBPS_ENEC_DECRETO_POLITICA_PUBLICA', 'conect_atendida', 'conect_encaminhada', '3_ST_CONECTIVIDADE_CL_100KBPS', 'escolas_conectadas_recurso', 'escolas_encaminhadas_recurso', 'disp_1_10_adq', 'disp_1_10_enc', 'wifi_adq', 'wifi_enc', 'BASELINE_ENCAMINHADAS', 'AFERICAO_ENCAMINHADAS'
         ]
     ]
 
+    
+    # Retorna a base limpa
+    return df
 
-    # Exporta base limpa
-    df_limpa.to_parquet(caminho_base_limpa, engine="pyarrow", index=False)
+
